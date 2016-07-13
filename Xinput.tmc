@@ -6,8 +6,6 @@ int main()
 {
 		
 	// Exclude missing devices
-	Configure(&Joystick, MODE_FILTERED);
-	Configure(&Throttle, MODE_FILTERED);
 	Configure(&HCougar, MODE_EXCLUDED);
 	Configure(&T16000, MODE_EXCLUDED);
 	Configure(&T16000L, MODE_EXCLUDED);
@@ -22,14 +20,33 @@ int main()
 
 	
 	//MapKey(&Joystick, TG1, XB_A);
-	MapKey(&Joystick, TG1, EXEC("_XbtnA(1);"));
-	MapKeyR(&Joystick, TG1, EXEC("_XbtnA(0);"));
+	MapKey(&Joystick, TG1, XB_A);
 	MapKey(&Joystick, S1, XB_B);
 	MapKey(&Joystick, S2, XB_GUIDE);
+	MapKey(&Joystick, S3, XB_X);
+	MapKey(&Joystick, S4, XB_Y);
+	
+	MapKey(&Joystick, H4U, XB_DPADUP);
+	MapKey(&Joystick, H4L, XB_DPADLEFT);
+	MapKey(&Joystick, H4D, XB_DPADDOWN);
+	MapKey(&Joystick, H4R, XB_DPADRIGHT);
+	MapKey(&Joystick, H4P, XB_A);
+	
+	MapKey(&Joystick, H1U, XB_LTHUMB);
+	MapKey(&Joystick, H1L, XB_LBUMPER);
+	MapKey(&Joystick, H1D, XB_RTHUMB);
+	MapKey(&Joystick, H1R, XB_RBUMPER);
+
+	
 	MapKey(&Throttle, EOLIGN, EXEC("UnPlugForce(xIdx);"));
+	MapKey(&Throttle, EORIGN, EXEC("UnPlugForce(xIdx);"));
 	
 	MapAxis(&Joystick, JOYX, XB_X_AXIS);
 	MapAxis(&Joystick, JOYY, XB_Y_AXIS);
+	MapAxis(&Throttle, THR_RIGHT, XB_RY_AXIS, AXIS_REVERSED);
+	MapAxis(&TFRPRudder, TRUDDER, XB_RX_AXIS);
+	MapAxis(&TFRPRudder, TRPLEFT, XB_LTRIGGER, AXIS_REVERSED);
+	MapAxis(&TFRPRudder, TRPRIGHT, XB_RTRIGGER, AXIS_REVERSED);
 }
 
 
@@ -37,17 +54,5 @@ int main()
 //event handler
 int EventHandle(int type, alias o, int x)
 {
-	int isAxisCommand = x >= IN_POSITION_AXES & x < IN_POSITION_HAT;
-	
-	if(isAxisCommand)
-    {
-		GetAxisData(&o, x);
-		if(!axdata.locked) {
-		GameOutput(&o, x, clip(AxisVal(o[x], &axdata), -AMAX, AMAX));
-		}
-    }
-    // Buttons & hats
-	else GameOutput(&o, x, o[x]);
-
     DefaultMapping(&o, x);
 }

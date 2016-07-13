@@ -9,9 +9,9 @@ alias TWCSThrottle	= "VID_044F&PID_B687", TFRPRudder="VID_044F&PID_B679", T16000
 
 
 define KDATASIZE		13
-define MAXKEYDATA		52*KDATASIZE	// max 52 physical+virtual keys for each device
+define MAXKEYDATA		255*KDATASIZE	// max 52 physical+virtual keys for each device -255 is the max!
 define AXDATASIZE		64				// sizeof(sAxis)
-define MAXAXDATA		32*AXDATASIZE	// max 16 physical axis for each device
+define MAXAXDATA		32*AXDATASIZE	// max 16 physical axis for each device -32 is the real max!
 struct sAxis
 {
 	char dxmap;
@@ -543,7 +543,7 @@ int HatUp(int p){ hatstatus = hatstatus & (p ^ 0xffffffff); VirtualOutput(OUT_TY
 int _key(int c, int mode, int delay=0)
 {
 	if(c >= MOUSE_LEFT) VirtualOutput(OUT_TYPE_MOUSE, c-MOUSE_LEFT, mode, delay);
-	else if((c >= XB_A) & (c <=XBDPADUPLEFT)) XB_Output(c-XB_A, mode, delay);
+	else if((c >= XB_A) & (c <=XB_DPADUPLEFT)) XB_Output(c-XB_A, mode, delay);
 	else if(c >= DX1) // DX key
 		if(c < DXHATUP) VirtualOutput(OUT_TYPE_GAME, c-DX1, mode, delay);
 		else 

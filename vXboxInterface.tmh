@@ -160,6 +160,7 @@ int _XbtnRT(int Press) { SetBtnRT(xIdx,Press); }
 int _XbtnLB(int Press) { SetBtnLB(xIdx,Press); }
 int _XbtnRB(int Press) { SetBtnRB(xIdx,Press); }
 
+
 int XB_Output(int Id, int value, int delay=0)
 {
 	if (delay > 10000) delay=10000;
@@ -178,7 +179,7 @@ int XB_Output(int Id, int value, int delay=0)
 			SetTriggerR(xIdx,value);
 			}
 	}
-	else { // Buttons  (My kingdom for a switch case function!)
+	else { // Buttons
 		if ((Id == XB_A-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
 			_XbtnA(1);
 			DeferCall(delay, &_XbtnA, 0);
@@ -255,5 +256,35 @@ int XB_Output(int Id, int value, int delay=0)
 			return 1;
 		}
 		if (Id == XB_GUIDE-XB_A) _XbtnGuide(value);
+		
+		//DPAD UP
+		if ((Id == XB_DPADUP - XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			SetDpadUp(xIdx);
+			DeferCall(delay, &SetDpadOff, xIdx);
+		}
+		if ((Id == XB_DPADUP-XB_A) & (value == OUT_VALUE_BUTTON_PRESS)) SetDpadUp(xIdx);
+		if ((Id == XB_DPADUP-XB_A) & (value == OUT_VALUE_BUTTON_RELEASE)) SetDpadOff(xIdx);
+		//DPAD RIGHT
+		if ((Id == XB_DPADRIGHT-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			SetDpadRight(xIdx);
+			DeferCall(delay, &SetDpadOff, xIdx);
+		}
+		if ((Id == XB_DPADRIGHT-XB_A) & (value == OUT_VALUE_BUTTON_PRESS)) SetDpadRight(xIdx);
+		if ((Id == XB_DPADRIGHT-XB_A) & (value == OUT_VALUE_BUTTON_RELEASE)) SetDpadOff(xIdx);
+		//DPAD DOWN
+		if ((Id == XB_DPADDOWN-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			SetDpadDown(xIdx);
+			DeferCall(delay, &SetDpadOff, xIdx);
+		}
+		if ((Id == XB_DPADDOWN-XB_A) & (value == OUT_VALUE_BUTTON_PRESS)) SetDpadDown(xIdx);
+		if ((Id == XB_DPADDOWN-XB_A) & (value == OUT_VALUE_BUTTON_RELEASE)) SetDpadOff(xIdx);
+		//DPAD LEFT
+		if ((Id == XB_DPADLEFT-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			SetDpadLeft(xIdx);
+			DeferCall(delay, &SetDpadOff, xIdx);
+		}
+		if ((Id == XB_DPADLEFT-XB_A) & (value == OUT_VALUE_BUTTON_PRESS)) SetDpadLeft(xIdx);
+		if ((Id == XB_DPADLEFT-XB_A) & (value == OUT_VALUE_BUTTON_RELEASE)) SetDpadOff(xIdx);
+		
 	}
 }
