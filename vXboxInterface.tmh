@@ -1,0 +1,259 @@
+//----------------------Declare vXboxInterface Functions------------------------
+int xIdx; //Controller number (1-4)
+	
+	/// Status
+	int isVBusExists(){};
+	int GetNumEmptyBusSlots(char nSlots){};
+	int isControllerExists(int UserIndex){};
+	int isControllerOwned(int UserIndex){};
+
+	// Virtual device Plug-In/Unplug
+	int PlugIn(int UserIndex){};
+	int UnPlug(int UserIndex){};
+	int UnPlugForce(int UserIndex){};
+
+	// Data Transfer (Data to the device)
+	int SetBtnA(int UserIndex, int Press){};
+	int SetBtnB(int UserIndex, int Press){};
+	int SetBtnX(int UserIndex, int Press){};
+	int SetBtnY(int UserIndex, int Press){};
+	int SetBtnStart(int UserIndex, int Press){};
+	int SetBtnBack(int UserIndex, int Press){};
+	int SetBtnGD(int UserIndex, int Press){};
+	int SetBtnLT(int UserIndex, int Press){}; // Left Thumb/Stick
+	int SetBtnRT(int UserIndex, int Press){}; // Right Thumb/Stick
+	int SetBtnLB(int UserIndex, int Press){}; // Left Bumper
+	int SetBtnRB(int UserIndex, int Press){}; // Right Bumper
+ 	int SetTriggerL(int UserIndex, byte Value){}; // Left Trigger
+ 	int SetTriggerR(int UserIndex, byte Value){}; // Right Trigger
+	int SetAxisX(int UserIndex, short Value){}; // Left Stick X
+	int SetAxisY(int UserIndex, short Value){}; // Left Stick Y
+	int SetAxisRx(int UserIndex, short Value){}; // Right Stick X
+	int SetAxisRy(int UserIndex, short Value){}; // Right Stick Y
+	int SetDpadUp(int UserIndex){};
+	int SetDpadRight(int UserIndex){};
+	int SetDpadDown(int UserIndex){};
+	int SetDpadLeft(int UserIndex){};
+	int SetDpadOff(int UserIndex){};
+
+	// Data Transfer (Feedback from the device)
+	int GetLedNumber(int UserIndex, byte pLed){};
+	int GetVibration(int UserIndex, byte pVib){};
+
+int InitXbox() {
+	int dll = LoadLibrary("vXboxInterface.dll"); //C:\\bin\\vXbox\\vXboxInterface.dll
+	printf("DLL address: %d\xa",dll);
+
+	if (!dll) {
+		printf("Failed loading vXboxInterface.dll, file not found.\xa"); 
+		return 1;
+	}
+	else printf("Loaded vXboxInterface.dll\xa");
+	
+	//Map functoins to dll
+	Map(&isVBusExists, GetProcAddress(dll, "isVBusExists"));
+	Map(&GetNumEmptyBusSlots, GetProcAddress(dll, "GetNumEmptyBusSlots"));
+	Map(&isControllerExists, GetProcAddress(dll, "isControllerExists"));
+	Map(&isControllerOwned, GetProcAddress(dll, "isControllerOwned"));	
+	Map(&PlugIn, GetProcAddress(dll, "PlugIn"));
+	Map(&UnPlug, GetProcAddress(dll, "UnPlug"));
+	Map(&UnPlugForce, GetProcAddress(dll, "UnPlugForce"));
+	Map(&SetBtnA, GetProcAddress(dll, "SetBtnA"));
+	Map(&SetBtnB, GetProcAddress(dll, "SetBtnB"));
+	Map(&SetBtnX, GetProcAddress(dll, "SetBtnX"));
+	Map(&SetBtnY, GetProcAddress(dll, "SetBtnY"));
+	Map(&SetBtnStart, GetProcAddress(dll, "SetBtnStart"));
+	Map(&SetBtnBack, GetProcAddress(dll, "SetBtnBack"));
+	Map(&SetBtnGD, GetProcAddress(dll, "SetBtnGD"));
+	Map(&SetBtnLT, GetProcAddress(dll, "SetBtnLT"));
+	Map(&SetBtnRT, GetProcAddress(dll, "SetBtnRT"));
+	Map(&SetBtnLB, GetProcAddress(dll, "SetBtnLB"));
+	Map(&SetBtnRB, GetProcAddress(dll, "SetBtnRB"));
+	Map(&SetTriggerL, GetProcAddress(dll, "SetTriggerL"));
+	Map(&SetTriggerR, GetProcAddress(dll, "SetTriggerR"));
+	Map(&SetAxisX, GetProcAddress(dll, "SetAxisX"));
+	Map(&SetAxisY, GetProcAddress(dll, "SetAxisY"));
+	Map(&SetAxisRx, GetProcAddress(dll, "SetAxisRx"));
+	Map(&SetAxisRy, GetProcAddress(dll, "SetAxisRy"));
+	Map(&SetDpadUp, GetProcAddress(dll, "SetDpadUp"));
+	Map(&SetDpadRight, GetProcAddress(dll, "SetDpadRight"));
+	Map(&SetDpadDown, GetProcAddress(dll, "SetDpadDown"));
+	Map(&SetDpadLeft, GetProcAddress(dll, "SetDpadLeft"));
+	Map(&SetDpadOff, GetProcAddress(dll, "SetDpadOff"));
+	Map(&GetLedNumber, GetProcAddress(dll, "GetLedNumber"));
+	Map(&GetVibration, GetProcAddress(dll, "GetVibration"));
+	
+	if (!isVBusExists()) {
+		printf("ScpVBus driver not found, you must install ScpVBus./xa");
+		return 1;
+	}
+	
+	//Brute force unplug everything and create new virtual controller
+//	int res;
+//	char nEmpty;
+//	res = GetNumEmptyBusSlots(&nEmpty);
+//	if (res) {
+//	printf("Got empty slots...\xa");
+//	printf("Empty slots %d\xa",nEmpty);
+	
+//	} else printf("Empty slots function failed!...");
+	
+//	if (nEmpty != 4) {
+	xIdx = 4;
+	while (xIdx>0) {
+		if (isControllerExists(xIdx)) {
+			UnPlugForce(xIdx);
+			while (isControllerExists(xIdx)) Sleep(50);  //wait for it to unplug
+		}
+		Sleep(100); //extra pause
+		xIdx = xIdx-1;
+	}
+//	}
+//	GetNumEmptyBusSlots(&nEmpty);  //check again in case real Xbox ctlr plugged in?
+//	xIdx = 4-nEmpty;
+	xIdx = 1;
+	printf("UserIndex = %d...\xa",xIdx);
+	PlugIn(xIdx);
+	while (!isControllerExists(xIdx)) {
+		sleep(50);  //wait till plugged in
+	}
+	printf("Virtual Xbox controller %d plugged in successfully on SCPbus.\xa",xIdx);
+}
+
+//element type - second parameter to VirtualOutput, GetInputValue, GameOutput
+//define OUT_ID_BUTTON			0
+//define OUT_ID_AXIS				256
+//define OUT_ID_HAT				288
+//define OUT_ID_HID_MAX			296
+//define OUT_ID_TIMER				1000
+//define OUT_ID_LED				5000
+
+//specific operation, for some element types - 3rd parameter to VirtualOutput (for buttons and timers)
+//define OUT_VALUE_BUTTON_RELEASE			0
+//define OUT_VALUE_BUTTON_PRESS			1
+//define OUT_VALUE_BUTTON_PRESS_RELEASE	2
+//define OUT_VALUE_BUTTON_TOGGLE			3
+
+//XB_Output sends commands to vXboxInterface.dll, keeping interface similar as possible to rest of TARGET.
+//Id    - one of OUT_ID_* + number representing specific index in the selected type
+//        (ex: OUT_ID_AXIS + IN_OFFSET_AXIS_X for X axis)
+//         "OUT_ID_TIMER+<timerIndex>" is supported, with value one of OUT_VALUE_TIMER_* ;
+//         OUT_ID_LED_* is not supported, will be interpreted as a timer
+//value - the value the selected element is set to
+//        button: one of OUT_VALUE_BUTTON_* (OUT_VALUE_BUTTON_PRESS_RELEASE uses delay as interval between press and release)
+//        axis:   the value the axis is set to (range: [-32767, 32767] )
+//        HAT:    the value the hat is set to (-1 for center, [0..360) for a specific angle - the angle will be rounded by hat positions )
+//delay   - specifies a time interval in miliseconds for button press-release (ignored if not needed)
+//NOTE: for OUT_VALUE_BUTTON_PRESS_RELEASE, delay interval is limited to 10seconds (any value that exceeds 10000 will be changed to this limit)
+
+
+//calls for XB_Output
+int _XbtnA(int Press) { SetBtnA(xIdx,Press); }
+int _XbtnB(int Press) { SetBtnB(xIdx,Press); }
+int _XbtnX(int Press) { SetBtnX(xIdx,Press); }
+int _XbtnY(int Press) { SetBtnY(xIdx,Press); }
+int _XbtnStart(int Press) { SetBtnStart(xIdx,Press); }
+int _XbtnBack(int Press) { SetBtnBack(xIdx,Press); }
+int _XbtnGuide(int Press) { SetBtnGD(xIdx,Press); }
+int _XbtnLT(int Press) { SetBtnLT(xIdx,Press); }
+int _XbtnRT(int Press) { SetBtnRT(xIdx,Press); }
+int _XbtnLB(int Press) { SetBtnLB(xIdx,Press); }
+int _XbtnRB(int Press) { SetBtnRB(xIdx,Press); }
+
+int XB_Output(int Id, int value, int delay=0)
+{
+	if (delay > 10000) delay=10000;
+	
+	if (Id >= OUT_ID_AXIS) {  // axis
+		if (Id == OUT_ID_AXIS+XB_X_AXIS) SetAxisX(xIdx,value);
+		if (Id == OUT_ID_AXIS+XB_Y_AXIS) SetAxisY(xIdx,value);
+		if (Id == OUT_ID_AXIS+XB_RX_AXIS) SetAxisRx(xIdx,value);
+		if (Id == OUT_ID_AXIS+XB_RY_AXIS) SetAxisRy(xIdx,value);
+		if (Id == OUT_ID_AXIS+XB_LTRIGGER) {
+			value = (value+AMAX)/256;  //convert to 0-256
+			SetTriggerL(xIdx,value);
+			}
+		if (Id == OUT_ID_AXIS+XB_RTRIGGER) {
+			value = (value+AMAX)/256;  //convert to 0-256
+			SetTriggerR(xIdx,value);
+			}
+	}
+	else { // Buttons  (My kingdom for a switch case function!)
+		if ((Id == XB_A-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnA(1);
+			DeferCall(delay, &_XbtnA, 0);
+			return 1;
+		}
+		if (Id == XB_A-XB_A) _XbtnA(value);
+		
+		if ((Id == XB_B-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnB(1);
+			DeferCall(delay, &_XbtnB, 0);
+			return 1;
+		}
+		if (Id == XB_B-XB_A) _XbtnB(value);
+		
+		if ((Id == XB_X-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnX(1);
+			DeferCall(delay, &_XbtnX, 0);
+			return 1;
+		}
+		if (Id == XB_X-XB_A) _XbtnX(value);
+		
+		if ((Id == XB_Y-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnY(1);
+			DeferCall(delay, &_XbtnY, 0);
+			return 1;
+		}
+		if (Id == XB_Y-XB_A) _XbtnY(value);
+		
+		if ((Id == XB_LTHUMB-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnLT(1);
+			DeferCall(delay, &_XbtnLT, 0);
+			return 1;
+		}
+		if (Id == XB_LTHUMB-XB_A) _XbtnLT(value);
+		
+		if ((Id == XB_RTHUMB-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnRT(1);
+			DeferCall(delay, &_XbtnRT, 0);
+			return 1;
+		}
+		if (Id == XB_RTHUMB-XB_A) _XbtnRT(value);
+		
+		if ((Id == XB_LBUMPER-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnLB(1);
+			DeferCall(delay, &_XbtnLB, 0);
+			return 1;
+		}
+		if (Id == XB_LBUMPER-XB_A) _XbtnLB(value);
+		
+		if ((Id == XB_RBUMPER-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnRB(1);
+			DeferCall(delay, &_XbtnRB, 0);
+			return 1;
+		}
+		if (Id == XB_RBUMPER-XB_A) _XbtnRB(value);
+		
+		if ((Id == XB_BACK-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnBack(1);
+			DeferCall(delay, &_XbtnBack, 0);
+			return 1;
+		}
+		if (Id == XB_BACK-XB_A) _XbtnBack(value);
+		
+		if ((Id == XB_START-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnStart(1);
+			DeferCall(delay, &_XbtnStart, 0);
+			return 1;
+		}
+		if (Id == XB_START-XB_A) _XbtnStart(value);
+		
+		if ((Id == XB_GUIDE-XB_A) & (value == OUT_VALUE_BUTTON_PRESS_RELEASE)) {
+			_XbtnGuide(1);
+			DeferCall(delay, &_XbtnGuide, 0);
+			return 1;
+		}
+		if (Id == XB_GUIDE-XB_A) _XbtnGuide(value);
+	}
+}

@@ -1,0 +1,53 @@
+include "target.tmh"
+include "vXboxInterface.tmh"
+
+//program startup
+int main()
+{
+		
+	// Exclude missing devices
+	Configure(&Joystick, MODE_FILTERED);
+	Configure(&Throttle, MODE_FILTERED);
+	Configure(&HCougar, MODE_EXCLUDED);
+	Configure(&T16000, MODE_EXCLUDED);
+	Configure(&T16000L, MODE_EXCLUDED);
+	Configure(&LMFD, MODE_EXCLUDED);
+	Configure(&RMFD, MODE_EXCLUDED);
+	Configure(&TWCSThrottle, MODE_EXCLUDED);
+	Configure(&TFRPRudder, MODE_KEEPENABLED); //Change to MODE_FILTERED for binding conflicts.
+	
+    if(Init(&EventHandle)) return 1; // declare the event handler, return on error
+	
+	if(InitXbox()) return 1; // Init xbox code, return on error
+
+	
+	//MapKey(&Joystick, TG1, XB_A);
+	MapKey(&Joystick, TG1, EXEC("_XbtnA(1);"));
+	MapKeyR(&Joystick, TG1, EXEC("_XbtnA(0);"));
+	MapKey(&Joystick, S1, XB_B);
+	MapKey(&Joystick, S2, XB_GUIDE);
+	MapKey(&Throttle, EOLIGN, EXEC("UnPlugForce(xIdx);"));
+	
+	MapAxis(&Joystick, JOYX, XB_X_AXIS);
+	MapAxis(&Joystick, JOYY, XB_Y_AXIS);
+}
+
+
+
+//event handler
+int EventHandle(int type, alias o, int x)
+{
+	int isAxisCommand = x >= IN_POSITION_AXES & x < IN_POSITION_HAT;
+	
+	if(isAxisCommand)
+    {
+		GetAxisData(&o, x);
+		if(!axdata.locked) {
+		GameOutput(&o, x, clip(AxisVal(o[x], &axdata), -AMAX, AMAX));
+		}
+    }
+    // Buttons & hats
+	else GameOutput(&o, x, o[x]);
+
+    DefaultMapping(&o, x);
+}
